@@ -4,11 +4,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>PolanDrop</title>
+	<link rel="manifest" href="manifest.json">
+<script>
+if ('serviceWorker' in navigator) {
+	window.addEventListener('load', () => {
+	navigator.serviceWorker.register('sw.js').then(registration => {
+	console.log('ServiceWorker registration successful with scope: ', registration.scope);
+	}, err => {
+	console.log('ServiceWorker registration failed: ', err);
+	}).catch(err => {
+	console.log(err)
+	});
+	});
+}
+</script>
+    
+    
+    
 
     <!-- Google Fonts & Material Symbols -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Google+Sans:ital,opsz,wght@0,17..18,400..700;1,17..18,400..700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
 
     <!-- Import Map for Material Web -->
@@ -23,6 +43,7 @@
     <style>
         /* * Material 3 Design Tokens - Google Blue (Fixed) */
         :root {
+            /* Light Mode Tokens */
             --md-sys-color-primary: #0b57d0;
             --md-sys-color-on-primary: #ffffff;
             --md-sys-color-primary-container: #d3e3fd;
@@ -44,11 +65,14 @@
             --md-sys-color-error: #b3261e;
             --md-sys-color-on-error: #ffffff;
             
+            /* Typography */
             --md-ref-typeface-brand: 'Google Sans', sans-serif;
             --md-ref-typeface-plain: 'Roboto', sans-serif;
+
             --transition-duration: 0.3s;
         }
 
+        /* Dark Mode Override */
         [data-theme="dark"] {
             --md-sys-color-primary: #a8c7fa;
             --md-sys-color-on-primary: #062e6f;
@@ -79,8 +103,10 @@
             flex-direction: column;
             min-height: 100vh;
             -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
         }
 
+        /* Layout */
         header {
             background-color: var(--md-sys-color-surface);
             color: var(--md-sys-color-on-surface);
@@ -111,33 +137,21 @@
             transition: padding-bottom 0.3s;
         }
 
+        /* View Management */
         .view-section {
             display: none;
             animation: fadeScale 0.25s cubic-bezier(0.2, 0, 0, 1) forwards;
         }
-        .view-section.active { display: block; }
+        .view-section.active {
+            display: block;
+        }
 
         @keyframes fadeScale {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        .section-card {
-            background-color: var(--md-sys-color-surface);
-            border-radius: 28px;
-            padding: 24px;
-            margin-bottom: 24px;
-            border: 1px solid var(--md-sys-color-outline-variant);
-        }
-
-        .section-title {
-            font-family: var(--md-ref-typeface-brand);
-            font-size: 1.5rem;
-            font-weight: 400;
-            margin-bottom: 20px;
-            color: var(--md-sys-color-primary);
-        }
-
+        /* Custom Navigation */
         .custom-nav {
             position: fixed;
             background-color: var(--md-sys-color-surface);
@@ -145,7 +159,9 @@
             align-items: center;
             z-index: 100;
             transition: all 0.3s ease;
-            bottom: 0; left: 0; right: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
             height: 80px;
             justify-content: space-evenly;
             padding-bottom: env(safe-area-inset-bottom);
@@ -153,72 +169,70 @@
         }
 
         .nav-item {
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            flex: 1; height: 100%; cursor: pointer; color: var(--md-sys-color-on-surface-variant); user-select: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+            height: 100%;
+            cursor: pointer;
+            color: var(--md-sys-color-on-surface-variant);
+            user-select: none;
         }
 
         .nav-icon-container {
-            width: 64px; height: 32px; display: flex; justify-content: center; align-items: center;
-            border-radius: 16px; margin-bottom: 4px; transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+            width: 64px;
+            height: 32px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 16px;
+            margin-bottom: 4px;
+            transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
         }
 
-        .nav-item .material-symbols-outlined { font-size: 24px; font-variation-settings: 'FILL' 0; }
-        .nav-label { font-size: 12px; font-weight: 500; }
+        .nav-item .material-symbols-outlined {
+            font-size: 24px;
+            font-variation-settings: 'FILL' 0;
+        }
+
+        .nav-label {
+            font-size: 12px;
+            font-weight: 500;
+        }
 
         .nav-item.active .nav-icon-container {
             background-color: var(--md-sys-color-secondary-container);
             color: var(--md-sys-color-on-secondary-container);
         }
-        .nav-item.active .material-symbols-outlined { font-variation-settings: 'FILL' 1; }
+
+        .nav-item.active .material-symbols-outlined {
+            font-variation-settings: 'FILL' 1;
+        }
 
         @media (min-width: 600px) {
             body { margin-left: 80px; }
             main { padding-bottom: 32px; }
             .custom-nav {
-                top: 0; bottom: 0; left: 0; right: auto; width: 80px; height: 100%;
-                flex-direction: column; justify-content: flex-start; padding-top: 32px;
+                top: 0; bottom: 0; left: 0; right: auto;
+                width: 80px; height: 100%; flex-direction: column;
+                justify-content: flex-start; padding-top: 32px;
             }
             .nav-item { flex: none; height: 72px; width: 100%; margin-bottom: 12px; }
         }
 
-        md-dialog { --md-dialog-container-color: var(--md-sys-color-surface); }
-
-        /* --- PolanDrop Specific Styles --- */
-        .radar-container {
-            position: relative;
-            width: 100%;
-            height: calc(100vh - 220px);
-            min-height: 400px;
-            background-color: var(--md-sys-color-surface-variant);
-            border-radius: 28px;
-            overflow: hidden;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            border: 1px solid var(--md-sys-color-outline-variant);
+        /* Dark Mode for Dialog explicitly */
+        md-dialog {
+            --md-dialog-container-color: var(--md-sys-color-surface);
         }
 
-        .radar-ripple {
-            position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            border-radius: 50%;
-            border: 2px solid var(--md-sys-color-primary);
-            animation: ripple 4s infinite linear;
-            pointer-events: none;
-            opacity: 0;
-        }
+        /* --- PolanDrop Custom Styles --- */
 
-        @keyframes ripple {
-            0% { width: 0px; height: 0px; opacity: 0.6; }
-            100% { width: 800px; height: 800px; opacity: 0; }
-        }
-
-        /* --- Countryball CSS --- */
+        /* Countryball CSS */
         .country-ball {
-            width: 100px;
-            height: 90px;
-            border: 4px solid #000;
+            width: 70px;
+            height: 64px;
+            border: 3px solid #000;
             border-radius: 52% 48% 45% 55% / 55% 55% 45% 45%;
             position: relative;
             overflow: hidden;
@@ -227,82 +241,169 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            box-shadow: inset -8px -8px 0 rgba(0,0,0,0.1), 0 4px 8px rgba(0,0,0,0.2);
+            box-shadow: inset -6px -6px 0 rgba(0,0,0,0.1), 0 4px 6px rgba(0,0,0,0.2);
             transition: transform 0.2s ease;
+            cursor: pointer;
+            flex-shrink: 0;
+            background-color: #fff; /* fallback */
         }
-
-        .country-ball:hover {
-            transform: scale(1.05) translateY(-5px);
-        }
-
+        .country-ball:hover { transform: scale(1.05) translateY(-3px); }
         .eyes-container {
-            display: flex; gap: 12px; margin-top: -10px; pointer-events: none;
+            display: flex; gap: 8px; margin-top: -6px; pointer-events: none;
         }
-
         .pb-eye {
-            width: 22px; height: 28px; background: #fff; border: 3px solid #000; border-radius: 50%;
+            width: 16px; height: 20px; background: #fff; border: 2.5px solid #000; border-radius: 50%;
         }
-
         .pb-eye.happy {
-            height: 15px; border-radius: 20px 20px 0 0; margin-top: 10px; border-bottom: 0;
+            height: 10px; border-radius: 16px 16px 0 0; margin-top: 8px;
         }
-
         .pb-eye.angry {
             transform: rotate(15deg); border-radius: 0 0 50% 50%;
         }
-        .eyes-container .pb-eye.angry:nth-child(2) {
-            transform: rotate(-15deg);
-        }
 
-        /* Flags */
+        /* Presets */
         .pb-poland { background: linear-gradient(to bottom, #dc143c 50%, #ffffff 50%); }
         .pb-japan { background-image: url('https://upload.wikimedia.org/wikipedia/commons/9/9e/Flag_of_Japan.svg'); }
         .pb-us { background-image: url('https://upload.wikimedia.org/wikipedia/en/a/a4/Flag_of_the_United_States.svg'); }
         .pb-uk { background-image: url('https://upload.wikimedia.org/wikipedia/en/a/ae/Flag_of_the_United_Kingdom.svg'); }
         .pb-germany { background-image: url('https://upload.wikimedia.org/wikipedia/en/b/ba/Flag_of_Germany.svg'); }
         .pb-france { background-image: url('https://upload.wikimedia.org/wikipedia/en/c/c3/Flag_of_France.svg'); }
-        .pb-italy { background-image: url('https://upload.wikimedia.org/wikipedia/en/0/03/Flag_of_Italy.svg'); }
 
-        .ball-wrapper {
-            display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;
-            position: absolute; z-index: 5;
+        /* Radar UI */
+        .radar-container {
+            position: relative;
+            width: 100%;
+            height: 60vh;
+            min-height: 400px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 28px;
+            background-color: var(--md-sys-color-surface-variant);
+            overflow: hidden;
+            border: 1px solid var(--md-sys-color-outline-variant);
+        }
+        .radar-ripple {
+            position: absolute;
+            width: 100px; height: 100px;
+            border-radius: 50%;
+            background-color: var(--md-sys-color-primary);
+            opacity: 0;
+            animation: ripple 3s linear infinite;
+        }
+        @keyframes ripple {
+            0% { transform: scale(1); opacity: 0.3; }
+            100% { transform: scale(6); opacity: 0; }
+        }
+        .my-device-center {
+            position: absolute;
+            z-index: 5;
+            display: flex; flex-direction: column; align-items: center;
+        }
+        .peer-device {
+            position: absolute;
+            z-index: 4;
+            display: flex; flex-direction: column; align-items: center;
             transition: all 0.5s cubic-bezier(0.2, 0, 0, 1);
         }
-
-        .ball-name {
-            font-size: 14px; font-family: var(--md-ref-typeface-brand); font-weight: 500;
-            color: var(--md-sys-color-on-surface); background: var(--md-sys-color-surface);
-            padding: 4px 12px; border-radius: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        .device-name {
+            margin-top: 8px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--md-sys-color-on-surface);
+            background: var(--md-sys-color-surface);
+            padding: 2px 8px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            max-width: 100px;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            overflow: hidden;
         }
-
-        /* Chat Styles */
-        .chat-bubble {
-            max-width: 80%; padding: 12px 16px; border-radius: 20px; margin-bottom: 8px;
-            word-break: break-word; font-size: 14px; line-height: 1.5;
+        .peer-badge {
+            position: absolute; top: -5px; right: -5px;
+            background: var(--md-sys-color-error); color: white;
+            border-radius: 50%; width: 20px; height: 20px;
+            font-size: 10px; display: flex; justify-content: center; align-items: center;
+            font-weight: bold; border: 2px solid var(--md-sys-color-surface);
+            opacity: 0; transition: opacity 0.2s;
         }
-        .chat-bubble.me {
-            align-self: flex-end; background-color: var(--md-sys-color-primary-container); color: var(--md-sys-color-on-primary-container);
+        .peer-badge.has-unread { opacity: 1; }
+
+        /* Chat UI */
+        .chat-container {
+            display: flex; flex-direction: column; height: calc(100vh - 160px);
+            background: var(--md-sys-color-surface); border-radius: 28px;
+            border: 1px solid var(--md-sys-color-outline-variant);
+            overflow: hidden;
+        }
+        .chat-header {
+            padding: 16px; background: var(--md-sys-color-surface-variant);
+            display: flex; align-items: center; gap: 12px;
+            border-bottom: 1px solid var(--md-sys-color-outline-variant);
+        }
+        .chat-messages {
+            flex: 1; padding: 16px; overflow-y: auto;
+            display: flex; flex-direction: column; gap: 12px;
+        }
+        .chat-input-area {
+            padding: 12px 16px; background: var(--md-sys-color-surface);
+            display: flex; align-items: center; gap: 8px;
+            border-top: 1px solid var(--md-sys-color-outline-variant);
+        }
+        .message-bubble {
+            max-width: 75%; padding: 12px 16px; border-radius: 16px;
+            font-size: 0.95rem; line-height: 1.4; word-wrap: break-word;
+            display: flex; flex-direction: column; gap: 4px;
+        }
+        .msg-self {
+            align-self: flex-end;
+            background: var(--md-sys-color-primary-container);
+            color: var(--md-sys-color-on-primary-container);
             border-bottom-right-radius: 4px;
         }
-        .chat-bubble.peer {
-            align-self: flex-start; background-color: var(--md-sys-color-surface-variant); color: var(--md-sys-color-on-surface-variant);
+        .msg-other {
+            align-self: flex-start;
+            background: var(--md-sys-color-secondary-container);
+            color: var(--md-sys-color-on-secondary-container);
             border-bottom-left-radius: 4px;
         }
-        .chat-media { max-width: 100%; border-radius: 12px; margin-top: 8px; }
-        
-        .chat-container-layout {
-            display:flex; flex-direction:column; height: calc(100vh - 160px); padding:0; overflow:hidden;
+        .msg-time { font-size: 0.7rem; opacity: 0.7; align-self: flex-end; }
+        .msg-image { max-width: 100%; border-radius: 8px; margin-top: 4px; }
+        .msg-video { max-width: 100%; border-radius: 8px; margin-top: 4px; outline: none; }
+        .msg-file-card {
+            display: flex; align-items: center; gap: 8px;
+            background: rgba(0,0,0,0.05); padding: 8px; border-radius: 8px;
+            margin-top: 4px; cursor: pointer; text-decoration: none; color: inherit;
         }
-        @media (min-width: 600px) {
-            .chat-container-layout { height: calc(100vh - 64px); }
+        .msg-file-card:hover { background: rgba(0,0,0,0.1); }
+
+        .section-card {
+            background-color: var(--md-sys-color-surface);
+            border-radius: 28px;
+            padding: 24px;
+            margin-bottom: 24px;
+            border: 1px solid var(--md-sys-color-outline-variant);
         }
+        .section-title {
+            font-family: var(--md-ref-typeface-brand); font-size: 1.5rem; color: var(--md-sys-color-primary); margin-bottom: 20px;
+        }
+        .flex-row-wrap { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+
+        .hub-link {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 12px 24px; border-radius: 24px;
+            background: var(--md-sys-color-tertiary); color: var(--md-sys-color-on-tertiary);
+            text-decoration: none; font-weight: 500; font-family: var(--md-ref-typeface-brand);
+            transition: opacity 0.2s; margin-top: 16px;
+        }
+        .hub-link:hover { opacity: 0.9; }
     </style>
 </head>
 <body>
 
     <header>
         <div style="display:flex; align-items:center; gap:12px;">
-            <md-icon-button><span class="material-symbols-outlined">menu</span></md-icon-button>
             <h1>PolanDrop</h1>
         </div>
         <div style="display:flex; align-items:center;">
@@ -313,7 +414,7 @@
                 <span class="material-symbols-outlined">info</span>
             </md-icon-button>
             <md-menu anchor="usage-anchor" id="usage-menu">
-                <md-menu-item onclick="window.showGoogleInfo()">
+                <md-menu-item onclick="document.getElementById('info-dialog').show()">
                     <div slot="headline">About PolanDrop</div>
                 </md-menu-item>
             </md-menu>
@@ -321,48 +422,76 @@
     </header>
 
     <main>
-        <!-- RADAR VIEW -->
+        <!-- HOME / RADAR VIEW -->
         <section id="view-radar" class="view-section active">
-            <h2 style="font-family: var(--md-ref-typeface-brand); color: var(--md-sys-color-primary); margin-top: 0;">Discover Devices</h2>
-            <div class="radar-container" id="radar-container">
-                <div class="radar-ripple" style="animation-delay: 0s;"></div>
-                <div class="radar-ripple" style="animation-delay: 1.3s;"></div>
-                <div class="radar-ripple" style="animation-delay: 2.6s;"></div>
+            <h2 style="font-family: var(--md-ref-typeface-brand); margin-top:0;">Nearby Devices</h2>
+            <p style="color: var(--md-sys-color-on-surface-variant); font-size: 0.9rem; margin-bottom: 24px;">
+                タップしてチャットやファイルをP2Pで送信します
+            </p>
+            <div class="radar-container" id="radar-area">
+                <div class="radar-ripple"></div>
+                <div class="radar-ripple" style="animation-delay: 1s;"></div>
+                <div class="radar-ripple" style="animation-delay: 2s;"></div>
                 
-                <div class="ball-wrapper" id="my-ball-wrapper" style="bottom: 20px; left: 50%; transform: translateX(-50%); pointer-events: none;">
-                    <div class="country-ball pb-poland" id="my-ball">
-                        <div class="eyes-container"><div class="pb-eye"></div><div class="pb-eye"></div></div>
+                <!-- My Device -->
+                <div class="my-device-center">
+                    <div class="country-ball pb-poland" id="my-ball-ui">
+                        <div class="eyes-container">
+                            <div class="pb-eye happy"></div><div class="pb-eye happy"></div>
+                        </div>
                     </div>
-                    <div class="ball-name" id="my-name-display">Me</div>
+                    <div class="device-name" id="my-name-ui">Me</div>
                 </div>
-                <!-- Peers will be injected here -->
+                <!-- Peers will be injected here via JS -->
+            </div>
+            
+            <div style="text-align: center; margin-top: 32px;">
+                <a href="https://sites.google.com/view/pballhub" target="_blank" class="hub-link">
+                    <span class="material-symbols-outlined">public</span>
+                    Visit PBallHub
+                </a>
             </div>
         </section>
 
         <!-- CHAT VIEW -->
         <section id="view-chat" class="view-section">
-            <div class="section-card chat-container-layout">
-                <div style="padding: 16px; border-bottom: 1px solid var(--md-sys-color-outline-variant); background: var(--md-sys-color-surface);">
-                    <div style="font-family: var(--md-ref-typeface-brand); font-weight: 500; margin-bottom: 8px; color: var(--md-sys-color-primary);">Select Peer</div>
-                    <div style="display:flex; gap:8px; overflow-x:auto; padding-bottom:4px;" id="chat-peer-chips">
-                        <!-- Chips injected here -->
+            <div class="chat-container" id="chat-ui-container" style="display: none;">
+                <div class="chat-header">
+                    <md-icon-button onclick="window.closeChat()">
+                        <span class="material-symbols-outlined">arrow_back</span>
+                    </md-icon-button>
+                    <div class="country-ball" id="chat-peer-ball" style="width: 40px; height: 36px; border-width: 2px;">
+                        <div class="eyes-container" style="transform: scale(0.6); margin-top: -8px;">
+                            <div class="pb-eye"></div><div class="pb-eye"></div>
+                        </div>
                     </div>
+                    <div style="font-weight: 500; font-family: var(--md-ref-typeface-brand);" id="chat-peer-name">Peer Name</div>
                 </div>
                 
-                <div id="chat-messages" style="flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column; background:var(--md-sys-color-background);">
-                    <div style="text-align:center; color:var(--md-sys-color-on-surface-variant); margin-top:40px;">Select a peer from above to start chatting.</div>
+                <div class="chat-messages" id="chat-messages-area">
+                    <!-- Messages go here -->
                 </div>
-                
-                <div style="display:flex; gap:8px; align-items:center; padding:12px 16px; background:var(--md-sys-color-surface); border-top: 1px solid var(--md-sys-color-outline-variant);">
-                    <input type="file" id="chat-file-input" style="display:none" onchange="window.handleFileSelect(event)">
-                    <md-icon-button onclick="document.getElementById('chat-file-input').click()">
+
+                <div class="chat-input-area">
+                    <input type="file" id="file-input" style="display:none" onchange="window.handleFileSelect(event)">
+                    <md-icon-button onclick="document.getElementById('file-input').click()">
                         <span class="material-symbols-outlined">attach_file</span>
                     </md-icon-button>
-                    <md-filled-text-field id="chat-text-input" placeholder="Message..." style="flex:1;" onkeydown="if(event.key==='Enter') window.sendChatMessage()"></md-filled-text-field>
-                    <md-filled-icon-button onclick="window.sendChatMessage()">
+                    <md-filled-text-field 
+                        id="chat-input-text" 
+                        placeholder="メッセージを入力..." 
+                        style="flex: 1;"
+                        onkeydown="if(event.key==='Enter') window.sendTextMessage()">
+                    </md-filled-text-field>
+                    <md-filled-icon-button onclick="window.sendTextMessage()">
                         <span class="material-symbols-outlined">send</span>
                     </md-filled-icon-button>
                 </div>
+            </div>
+            
+            <div id="chat-placeholder" style="text-align: center; padding: 40px; color: var(--md-sys-color-on-surface-variant);">
+                <span class="material-symbols-outlined" style="font-size: 48px; opacity: 0.5;">chat</span>
+                <p>Homeタブのレーダーからデバイスを選択してチャットを開始してください。</p>
             </div>
         </section>
 
@@ -370,28 +499,36 @@
         <section id="view-settings" class="view-section">
             <div class="section-card">
                 <div class="section-title">Profile Settings</div>
-                <div style="display:flex; align-items:center; gap:24px; margin-bottom: 32px; flex-wrap: wrap;">
-                    <div class="country-ball" id="settings-ball-preview" style="transform: scale(0.8);">
-                        <div class="eyes-container"><div class="pb-eye"></div><div class="pb-eye"></div></div>
-                    </div>
-                    <md-filled-text-field id="profile-name-input" label="Device Name" style="flex:1; min-width: 200px;"></md-filled-text-field>
-                </div>
                 
-                <h3 style="font-family: var(--md-ref-typeface-plain); font-size: 0.875rem; color: var(--md-sys-color-on-surface-variant); text-transform: uppercase; letter-spacing: 0.1em;">Select Flag</h3>
-                <md-chip-set id="flag-chips" style="margin-bottom: 24px;">
-                    <!-- JS generated -->
-                </md-chip-set>
+                <div style="display:flex; flex-direction:column; gap:24px;">
+                    <md-filled-text-field id="setting-name-input" label="表示名" placeholder="名前を入力">
+                        <md-icon slot="leading-icon"><span class="material-symbols-outlined">person</span></md-icon>
+                    </md-filled-text-field>
 
-                <md-filled-button onclick="window.saveProfile()">Save Profile</md-filled-button>
-            </div>
+                    <div>
+                        <h3 style="font-size: 1rem; margin-bottom: 12px; font-family: var(--md-ref-typeface-plain); color: var(--md-sys-color-on-surface-variant);">アイコン (Countryball)</h3>
+                        <md-chip-set id="ball-chip-set">
+                            <md-filter-chip label="Poland" data-val="pb-poland" selected onclick="window.selectBall('pb-poland')"></md-filter-chip>
+                            <md-filter-chip label="Japan" data-val="pb-japan" onclick="window.selectBall('pb-japan')"></md-filter-chip>
+                            <md-filter-chip label="USA" data-val="pb-us" onclick="window.selectBall('pb-us')"></md-filter-chip>
+                            <md-filter-chip label="UK" data-val="pb-uk" onclick="window.selectBall('pb-uk')"></md-filter-chip>
+                            <md-filter-chip label="Germany" data-val="pb-germany" onclick="window.selectBall('pb-germany')"></md-filter-chip>
+                            <md-filter-chip label="France" data-val="pb-france" onclick="window.selectBall('pb-france')"></md-filter-chip>
+                        </md-chip-set>
+                    </div>
 
-            <div class="section-card">
-                <div class="section-title">Community</div>
-                <p style="color: var(--md-sys-color-on-surface-variant); margin-top: 0;">Explore more Countryballs creations and hubs.</p>
-                <md-text-button href="https://sites.google.com/view/pballhub" target="_blank">
-                    <span class="material-symbols-outlined" slot="icon">public</span>
-                    Visit Pball Hub
-                </md-text-button>
+                    <div style="display:flex; justify-content:center; margin: 16px 0;">
+                        <div class="country-ball pb-poland" id="setting-preview-ball">
+                            <div class="eyes-container">
+                                <div class="pb-eye happy"></div><div class="pb-eye happy"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <md-filled-button onclick="window.saveSettings()" style="align-self: flex-start;">
+                        保存して更新
+                    </md-filled-button>
+                </div>
             </div>
         </section>
     </main>
@@ -400,10 +537,13 @@
     <nav class="custom-nav">
         <div class="nav-item active" id="nav-radar" onclick="window.switchTab('radar')">
             <div class="nav-icon-container"><span class="material-symbols-outlined">radar</span></div>
-            <span class="nav-label">Radar</span>
+            <span class="nav-label">Home</span>
         </div>
         <div class="nav-item" id="nav-chat" onclick="window.switchTab('chat')">
-            <div class="nav-icon-container"><span class="material-symbols-outlined">chat</span></div>
+            <div class="nav-icon-container">
+                <span class="material-symbols-outlined">chat</span>
+                <div id="nav-chat-badge" style="position:absolute; top:8px; right:20px; width:8px; height:8px; background:var(--md-sys-color-error); border-radius:50%; display:none;"></div>
+            </div>
             <span class="nav-label">Chat</span>
         </div>
         <div class="nav-item" id="nav-settings" onclick="window.switchTab('settings')">
@@ -412,34 +552,28 @@
         </div>
     </nav>
 
-    <!-- Dialogs -->
+    <!-- Info Dialog -->
     <md-dialog id="info-dialog">
         <div slot="headline">About PolanDrop</div>
         <div slot="content">
-            <p>PolanDrop is a local network file sharing and messaging tool powered by WebRTC and BroadcastChannel, wrapped in a Material 3 Google Blue design.</p>
-            <p>It uses P2P connections to transfer files directly between devices (browser tabs) without a central server for the data.</p>
+            <p>PolanDropは、ローカルネットワーク（同一アプリ空間）上のデバイスを自動検出し、WebRTC技術を用いてP2Pで直接ファイル共有やチャットを行うことができるWebアプリです。</p>
+            <ul>
+                <li>データはサーバーを経由せず、デバイス間で直接送受信されます。</li>
+                <li>Material 3のGoogle Blueデザインを採用しています。</li>
+            </ul>
         </div>
         <div slot="actions">
-            <md-text-button onclick="document.getElementById('info-dialog').close()">Close</md-text-button>
-        </div>
-    </md-dialog>
-
-    <md-dialog id="peer-action-dialog">
-        <div slot="headline" id="peer-dialog-title">Device Actions</div>
-        <div slot="content">
-            <div style="display:flex; flex-direction:column; gap:16px; margin-top: 8px;">
-                <md-filled-button onclick="window.openChatFromDialog()">
-                    <span class="material-symbols-outlined" slot="icon">chat</span> Chat & Share
-                </md-filled-button>
-            </div>
-        </div>
-        <div slot="actions">
-            <md-text-button onclick="document.getElementById('peer-action-dialog').close()">Cancel</md-text-button>
+            <md-text-button onclick="document.getElementById('info-dialog').close()">閉じる</md-text-button>
         </div>
     </md-dialog>
 
     <script type="module">
         import '@material/web/all.js';
+        
+        // Firebase Imports (Used for Signaling & Presence only)
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, doc, setDoc, addDoc, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // --- Theme Management ---
         let isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -460,347 +594,499 @@
             const targetNav = document.getElementById('nav-' + tabId);
             if(targetNav) targetNav.classList.add('active');
             window.scrollTo({ top: 0, behavior: 'smooth' });
-
-            if(tabId === 'chat') renderChatMessages();
+            
+            if(tabId === 'chat') {
+                document.getElementById('nav-chat-badge').style.display = 'none';
+            }
         };
 
-        window.showGoogleInfo = function() { document.getElementById('info-dialog').show(); };
-        const menu = document.getElementById('usage-menu');
-        const anchor = document.getElementById('usage-anchor');
-        anchor.addEventListener('click', () => { menu.open = !menu.open; });
+        // --- State Management ---
+        const State = {
+            userId: null,
+            initTime: Date.now(),
+            name: "Device_" + Math.floor(Math.random() * 1000),
+            ball: "pb-poland",
+            peers: {}, // { uid: { uid, name, ball, unread: 0, timestamp } }
+            rtcConnections: {}, 
+            dataChannels: {}, 
+            iceQueue: {},
+            messages: {}, // { uid: [ {sender, type, content, time, ...} ] }
+            activeChatPeerId: null // is now uid
+        };
 
-        // --- PolanDrop Logic (WebRTC + BroadcastChannel) ---
-        const FLAGS = [
-            { id: 'pb-poland', name: 'Poland' }, { id: 'pb-japan', name: 'Japan' },
-            { id: 'pb-us', name: 'US' }, { id: 'pb-uk', name: 'UK' },
-            { id: 'pb-germany', name: 'Germany' }, { id: 'pb-france', name: 'France' },
-            { id: 'pb-italy', name: 'Italy' }
-        ];
+        // UI Setup
+        document.getElementById('setting-name-input').value = State.name;
+        document.getElementById('my-name-ui').innerText = State.name;
 
-        let myProfile = JSON.parse(localStorage.getItem('polandrop_profile'));
-        if (!myProfile) {
-            const rf = FLAGS[Math.floor(Math.random() * FLAGS.length)];
-            myProfile = { id: crypto.randomUUID(), name: rf.name + '_' + Math.floor(Math.random()*1000), flag: rf.id };
-            localStorage.setItem('polandrop_profile', JSON.stringify(myProfile));
-        }
+        window.selectBall = function(ballClass) {
+            State.ball = ballClass;
+            document.getElementById('setting-preview-ball').className = `country-ball ${ballClass}`;
+            document.querySelectorAll('md-filter-chip').forEach(chip => {
+                chip.selected = chip.getAttribute('data-val') === ballClass;
+            });
+        };
 
-        const peers = {}; // peerId -> { profile, pc, dc, messages: [], x, y, incomingFile }
-        let currentChatPeerId = null;
-        let actionTargetPeerId = null;
+        window.saveSettings = function() {
+            State.name = document.getElementById('setting-name-input').value || "Unknown";
+            document.getElementById('my-name-ui').innerText = State.name;
+            document.getElementById('my-ball-ui').className = `country-ball ${State.ball}`;
+            updatePresence();
+            alert("プロフィールを更新しました");
+        };
 
-        const signalingChannel = new BroadcastChannel('polandrop-signaling');
+        // --- Firebase Setup ---
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
+            apiKey: "mock", projectId: "mock", appId: "mock"
+        };
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'polandrop-local';
+        
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        
+        let unsubscribePresence = null;
+        let unsubscribeSignals = null;
 
-        function init() {
-            updateMyUI();
-            initSettingsUI();
-            signalingChannel.onmessage = handleSignaling;
-            announce();
-            setInterval(announce, 3000); // Heartbeat
-        }
-
-        function updateMyUI() {
-            const ball = document.getElementById('my-ball');
-            ball.className = `country-ball ${myProfile.flag}`;
-            document.getElementById('my-name-display').innerText = myProfile.name + ' (You)';
-        }
-
-        function announce() {
-            signalingChannel.postMessage({ type: 'announce', profile: myProfile });
-        }
-
-        async function handleSignaling(event) {
-            const data = event.data;
-            const peerId = data.profile ? data.profile.id : data.from;
-            if (peerId === myProfile.id) return;
-
-            if (data.profile && !peers[peerId]) {
-                peers[peerId] = {
-                    profile: data.profile, pc: null, dc: null, messages: [],
-                    x: Math.random() * 70 + 15, y: Math.random() * 50 + 10 // Radar pos (top 10-60%, left 15-85%)
-                };
-                renderRadar();
-                updateChatPeerList();
-            } else if (data.profile && peers[peerId]) {
-                // Update profile if changed
-                if(peers[peerId].profile.name !== data.profile.name || peers[peerId].profile.flag !== data.profile.flag){
-                    peers[peerId].profile = data.profile;
-                    renderRadar();
-                    updateChatPeerList();
+        const initAuth = async () => {
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
                 }
+            } catch (e) {
+                console.error("Auth failed:", e);
             }
+        };
 
-            switch (data.type) {
-                case 'announce':
-                    // Establish WebRTC to avoid duplicate connections, higher ID initiates
-                    if (myProfile.id > peerId && (!peers[peerId].pc || peers[peerId].pc.signalingState === 'closed')) {
-                        await setupPeerConnection(peerId, true);
-                    }
-                    break;
-                case 'offer':
-                    if (data.target === myProfile.id) {
-                        await setupPeerConnection(peerId, false);
-                        await peers[peerId].pc.setRemoteDescription(new RTCSessionDescription(data.offer));
-                        const answer = await peers[peerId].pc.createAnswer();
-                        await peers[peerId].pc.setLocalDescription(answer);
-                        signalingChannel.postMessage({ type: 'answer', target: peerId, from: myProfile.id, answer: answer });
-                    }
-                    break;
-                case 'answer':
-                    if (data.target === myProfile.id && peers[peerId].pc) {
-                        await peers[peerId].pc.setRemoteDescription(new RTCSessionDescription(data.answer));
-                    }
-                    break;
-                case 'ice-candidate':
-                    if (data.target === myProfile.id && peers[peerId].pc) {
-                        await peers[peerId].pc.addIceCandidate(new RTCIceCandidate(data.candidate));
-                    }
-                    break;
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                State.userId = user.uid;
+                updatePresence();
+                listenForPeers();
+                listenForSignals();
             }
+        });
+
+        initAuth();
+
+        async function updatePresence() {
+            if (!State.userId) return;
+            const presenceRef = doc(db, 'artifacts', appId, 'public', 'data', 'polandrop_devices', State.userId);
+            try {
+                await setDoc(presenceRef, {
+                    uid: State.userId,
+                    name: State.name,
+                    ball: State.ball,
+                    timestamp: Date.now()
+                });
+            } catch (e) { console.error("Error setting presence:", e); }
         }
 
-        async function setupPeerConnection(peerId, isInitiator) {
-            if (peers[peerId].pc) peers[peerId].pc.close();
-            const pc = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
-            peers[peerId].pc = pc;
+        function listenForPeers() {
+            if (unsubscribePresence) unsubscribePresence();
+            const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'polandrop_devices');
+            
+            unsubscribePresence = onSnapshot(colRef, (snapshot) => {
+                const currentUids = new Set();
+                snapshot.forEach(docSnap => {
+                    const data = docSnap.data();
+                    if (data.uid === State.userId) return; // Skip self
+                    
+                    // Filter out stale devices (> 5 mins)
+                    if (Date.now() - data.timestamp > 5 * 60 * 1000) return;
+                    
+                    currentUids.add(data.uid);
+                    if (!State.peers[data.uid]) {
+                        State.peers[data.uid] = { ...data, unread: 0 };
+                    } else {
+                        State.peers[data.uid].name = data.name;
+                        State.peers[data.uid].ball = data.ball;
+                    }
+                });
 
-            pc.onicecandidate = (e) => {
-                if (e.candidate) signalingChannel.postMessage({ type: 'ice-candidate', target: peerId, from: myProfile.id, candidate: e.candidate });
+                Object.keys(State.peers).forEach(uid => {
+                    if (!currentUids.has(uid)) delete State.peers[uid];
+                });
+
+                renderRadar();
+            }, (error) => {
+                console.error("Presence listen error:", error);
+            });
+        }
+
+        function listenForSignals() {
+            if (unsubscribeSignals) unsubscribeSignals();
+            const sigCol = collection(db, 'artifacts', appId, 'public', 'data', 'polandrop_signals');
+            
+            unsubscribeSignals = onSnapshot(sigCol, (snapshot) => {
+                snapshot.docChanges().forEach(change => {
+                    if (change.type === 'added') {
+                        const data = change.doc.data();
+                        // 新規に自分宛てのシグナルが届いた場合のみ処理
+                        if (data.to === State.userId && data.timestamp >= State.initTime) {
+                            handleSignal(data.from, data.type, JSON.parse(data.payload));
+                            // シグナルを処理したらドキュメントを消去
+                            deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'polandrop_signals', change.doc.id)).catch(()=>{});
+                        }
+                    }
+                });
+            }, (error) => {
+                console.error("Signal listen error:", error);
+            });
+        }
+
+        // Cleanup on exit
+        window.addEventListener('beforeunload', () => {
+            if(State.userId) {
+                const presenceRef = doc(db, 'artifacts', appId, 'public', 'data', 'polandrop_devices', State.userId);
+                deleteDoc(presenceRef).catch(()=>{});
+            }
+            Object.values(State.rtcConnections).forEach(pc => pc.close());
+        });
+
+        // --- Native WebRTC Logic ---
+        
+        const rtcConfig = {
+            'iceServers': [
+                {'urls': 'stun:stun.l.google.com:19302'}
+            ]
+        };
+
+        async function createConnection(peerUid) {
+            const pc = new RTCPeerConnection(rtcConfig);
+            State.rtcConnections[peerUid] = pc;
+
+            pc.onicecandidate = event => {
+                if (event.candidate) {
+                    sendSignal(peerUid, 'candidate', event.candidate);
+                }
             };
 
-            if (isInitiator) {
-                const dc = pc.createDataChannel('polandrop-data');
-                setupDataChannel(peerId, dc);
+            pc.ondatachannel = event => {
+                setupDataChannel(peerUid, event.channel);
+            };
+
+            pc.onconnectionstatechange = () => {
+                if (pc.connectionState === 'disconnected' || pc.connectionState === 'failed') {
+                    delete State.rtcConnections[peerUid];
+                    delete State.dataChannels[peerUid];
+                }
+            };
+
+            return pc;
+        }
+
+        function setupDataChannel(peerUid, channel) {
+            State.dataChannels[peerUid] = channel;
+            channel.binaryType = 'arraybuffer'; // ファイル転送用
+            
+            let pendingMeta = null;
+
+            channel.onmessage = event => {
+                const data = event.data;
+                if (typeof data === 'string') {
+                    try {
+                        const parsed = JSON.parse(data);
+                        if (parsed.type === 'file_meta') {
+                            pendingMeta = parsed;
+                        } else {
+                            handleIncomingMessage(peerUid, parsed);
+                        }
+                    } catch(e) {}
+                } else if (data instanceof ArrayBuffer || data instanceof Blob) {
+                    if (pendingMeta) {
+                        const fileMsg = {
+                            type: 'file',
+                            fileName: pendingMeta.fileName,
+                            mimeType: pendingMeta.mimeType,
+                            content: data
+                        };
+                        handleIncomingMessage(peerUid, fileMsg);
+                        pendingMeta = null;
+                    }
+                }
+            };
+
+            channel.onclose = () => {
+                delete State.dataChannels[peerUid];
+            };
+        }
+
+        async function connectToPeerWebRTC(peerUid) {
+            if (State.rtcConnections[peerUid]) return;
+            try {
+                const pc = await createConnection(peerUid);
+                const channel = pc.createDataChannel('chat');
+                setupDataChannel(peerUid, channel);
+
                 const offer = await pc.createOffer();
                 await pc.setLocalDescription(offer);
-                signalingChannel.postMessage({ type: 'offer', target: peerId, from: myProfile.id, offer: offer });
-            } else {
-                pc.ondatachannel = (e) => setupDataChannel(peerId, e.channel);
+                await sendSignal(peerUid, 'offer', offer);
+            } catch (e) {
+                console.error("WebRTC Connect Error:", e);
             }
         }
 
-        function setupDataChannel(peerId, dc) {
-            peers[peerId].dc = dc;
-            dc.onopen = () => console.log(`DataChannel Open: ${peerId}`);
-            dc.onclose = () => {
-                console.log(`DataChannel Closed: ${peerId}`);
-                if(peers[peerId]) peers[peerId].dc = null;
-            };
-            dc.onmessage = (e) => handleDataMessage(peerId, e.data);
+        async function handleSignal(peerUid, type, payload) {
+            let pc = State.rtcConnections[peerUid];
+
+            try {
+                if (type === 'offer') {
+                    if (!pc) pc = await createConnection(peerUid);
+                    await pc.setRemoteDescription(new RTCSessionDescription(payload));
+                    const answer = await pc.createAnswer();
+                    await pc.setLocalDescription(answer);
+                    await sendSignal(peerUid, 'answer', answer);
+                } else if (type === 'answer') {
+                    if (pc) await pc.setRemoteDescription(new RTCSessionDescription(payload));
+                } else if (type === 'candidate') {
+                    if (pc && pc.remoteDescription) {
+                        await pc.addIceCandidate(new RTCIceCandidate(payload));
+                    } else {
+                        // リモートディスクリプション設定前に届いたICE候補をキューに保持
+                        if(!State.iceQueue[peerUid]) State.iceQueue[peerUid] = [];
+                        State.iceQueue[peerUid].push(payload);
+                    }
+                }
+                
+                // Process queued candidates
+                if (pc && pc.remoteDescription && State.iceQueue[peerUid] && State.iceQueue[peerUid].length > 0) {
+                    for (let cand of State.iceQueue[peerUid]) {
+                        await pc.addIceCandidate(new RTCIceCandidate(cand)).catch(()=>{});
+                    }
+                    State.iceQueue[peerUid] = [];
+                }
+            } catch(e) {
+                console.error("Signal Handling Error:", e);
+            }
         }
 
-        // --- Data Transmission & Handling ---
-        window.arrayBufferToBase64 = function(buffer) {
-            let binary = ''; const bytes = new Uint8Array(buffer);
-            for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
-            return window.btoa(binary);
+        async function sendSignal(toUid, type, payload) {
+            const sigCol = collection(db, 'artifacts', appId, 'public', 'data', 'polandrop_signals');
+            await addDoc(sigCol, {
+                to: toUid,
+                from: State.userId,
+                type: type,
+                payload: JSON.stringify(payload),
+                timestamp: Date.now()
+            });
         }
 
-        window.base64ToArrayBuffer = function(base64) {
-            const binary_string = window.atob(base64); const len = binary_string.length;
-            const bytes = new Uint8Array(len);
-            for (let i = 0; i < len; i++) bytes[i] = binary_string.charCodeAt(i);
-            return bytes.buffer;
-        }
-
-        function handleDataMessage(peerId, dataStr) {
-            const msg = JSON.parse(dataStr);
-            const peer = peers[peerId];
+        function handleIncomingMessage(peerUid, msgData) {
+            if (!State.messages[peerUid]) State.messages[peerUid] = [];
             
-            if (msg.type === 'text') {
-                peer.messages.push({ from: peerId, text: msg.text, time: new Date() });
-                if(currentChatPeerId === peerId) renderChatMessages();
-            } else if (msg.type === 'file-start') {
-                peer.incomingFile = { meta: msg, chunks: [] };
-            } else if (msg.type === 'file-chunk') {
-                if(peer.incomingFile) peer.incomingFile.chunks[msg.index] = window.base64ToArrayBuffer(msg.data);
-            } else if (msg.type === 'file-end') {
-                if(peer.incomingFile) {
-                    const blob = new Blob(peer.incomingFile.chunks, { type: peer.incomingFile.meta.fileType });
-                    const url = URL.createObjectURL(blob);
-                    peer.messages.push({
-                        from: peerId, fileName: peer.incomingFile.meta.name, 
-                        fileType: peer.incomingFile.meta.fileType, fileUrl: url, time: new Date()
-                    });
-                    peer.incomingFile = null;
-                    if(currentChatPeerId === peerId) renderChatMessages();
+            const msgObj = {
+                sender: 'them',
+                time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                ...msgData 
+            };
+            
+            State.messages[peerUid].push(msgObj);
+            
+            if (State.activeChatPeerId === peerUid) {
+                renderMessages();
+            } else {
+                if (State.peers[peerUid]) {
+                    State.peers[peerUid].unread++;
+                    renderRadar();
+                    document.getElementById('nav-chat-badge').style.display = 'block';
                 }
             }
         }
 
-        window.sendChatMessage = function() {
-            const input = document.getElementById('chat-text-input');
+        window.sendTextMessage = function() {
+            const input = document.getElementById('chat-input-text');
             const text = input.value.trim();
-            if (!text || !currentChatPeerId || !peers[currentChatPeerId] || !peers[currentChatPeerId].dc) return;
+            if(!text || !State.activeChatPeerId) return;
+
+            const msgData = { type: 'text', content: text };
+            const channel = State.dataChannels[State.activeChatPeerId];
             
-            if (peers[currentChatPeerId].dc.readyState === 'open') {
-                peers[currentChatPeerId].dc.send(JSON.stringify({ type: 'text', text: text }));
-                peers[currentChatPeerId].messages.push({ from: myProfile.id, text: text, time: new Date() });
-                input.value = '';
-                renderChatMessages();
+            if(channel && channel.readyState === 'open') {
+                channel.send(JSON.stringify(msgData));
             } else {
-                alert("Connection not established yet. Please wait.");
+                connectToPeerWebRTC(State.activeChatPeerId);
+                alert("接続を確立中です。数秒待ってから再送信してください。");
+                return;
             }
+
+            if(!State.messages[State.activeChatPeerId]) State.messages[State.activeChatPeerId] = [];
+            State.messages[State.activeChatPeerId].push({
+                sender: 'me',
+                time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                ...msgData
+            });
+
+            input.value = '';
+            renderMessages();
         };
 
-        window.handleFileSelect = async function(event) {
+        window.handleFileSelect = function(event) {
             const file = event.target.files[0];
-            if (!file || !currentChatPeerId || !peers[currentChatPeerId]) return;
-            event.target.value = ''; // reset
-            
-            const peer = peers[currentChatPeerId];
-            if (!peer.dc || peer.dc.readyState !== 'open') {
-                alert("Connection not ready."); return;
+            if(!file || !State.activeChatPeerId) return;
+
+            const channel = State.dataChannels[State.activeChatPeerId];
+            if(!channel || channel.readyState !== 'open') {
+                connectToPeerWebRTC(State.activeChatPeerId);
+                alert("接続を確立中です。数秒待ってから再送信してください。");
+                event.target.value = '';
+                return;
             }
 
-            const chunkSize = 65536; // 64KB
-            const buffer = await file.arrayBuffer();
-            const totalChunks = Math.ceil(buffer.byteLength / chunkSize);
-            const fileId = crypto.randomUUID();
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const arrayBuffer = e.target.result;
+                
+                // メタデータを送信
+                channel.send(JSON.stringify({
+                    type: 'file_meta',
+                    fileName: file.name,
+                    mimeType: file.type
+                }));
+                
+                // バイナリデータを送信
+                channel.send(arrayBuffer);
 
-            peer.dc.send(JSON.stringify({ type: 'file-start', fileId, name: file.name, fileType: file.type, totalChunks }));
+                const msgData = {
+                    type: 'file',
+                    content: arrayBuffer,
+                    fileName: file.name,
+                    mimeType: file.type
+                };
 
-            for (let i = 0; i < totalChunks; i++) {
-                const chunk = buffer.slice(i * chunkSize, (i + 1) * chunkSize);
-                const base64Chunk = window.arrayBufferToBase64(chunk);
-                peer.dc.send(JSON.stringify({ type: 'file-chunk', fileId, index: i, data: base64Chunk }));
-                await new Promise(r => setTimeout(r, 5)); // prevent buffer overflow
-            }
-            peer.dc.send(JSON.stringify({ type: 'file-end', fileId }));
-
-            const blobUrl = URL.createObjectURL(file);
-            peer.messages.push({ from: myProfile.id, fileName: file.name, fileType: file.type, fileUrl: blobUrl, time: new Date() });
-            renderChatMessages();
+                if(!State.messages[State.activeChatPeerId]) State.messages[State.activeChatPeerId] = [];
+                State.messages[State.activeChatPeerId].push({
+                    sender: 'me',
+                    time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                    ...msgData
+                });
+                renderMessages();
+            };
+            reader.readAsArrayBuffer(file);
+            event.target.value = ''; 
         };
 
         // --- UI Rendering ---
+
         function renderRadar() {
-            const container = document.getElementById('radar-container');
-            // Remove old peers
-            container.querySelectorAll('.peer-ball').forEach(el => el.remove());
+            const radarArea = document.getElementById('radar-area');
+            document.querySelectorAll('.peer-device').forEach(n => n.remove());
 
-            Object.keys(peers).forEach(peerId => {
-                const peer = peers[peerId];
-                const wrapper = document.createElement('div');
-                wrapper.className = 'ball-wrapper peer-ball';
-                wrapper.style.left = `${peer.x}%`;
-                wrapper.style.top = `${peer.y}%`;
-                wrapper.onclick = () => window.openPeerAction(peerId);
+            const peersList = Object.entries(State.peers);
+            const total = peersList.length;
+            const radius = window.innerWidth < 600 ? 100 : 140;
 
-                const eyeClass = Math.random() > 0.5 ? 'happy' : '';
-                wrapper.innerHTML = `
-                    <div class="country-ball ${peer.profile.flag}">
-                        <div class="eyes-container"><div class="pb-eye ${eyeClass}"></div><div class="pb-eye ${eyeClass}"></div></div>
-                    </div>
-                    <div class="ball-name">${peer.profile.name}</div>
-                `;
-                container.appendChild(wrapper);
-            });
-        }
+            peersList.forEach(([uid, pInfo], index) => {
+                const angle = (index / total) * (2 * Math.PI);
+                const x = Math.cos(angle) * radius;
+                const y = Math.sin(angle) * radius;
 
-        window.openPeerAction = function(peerId) {
-            actionTargetPeerId = peerId;
-            document.getElementById('peer-dialog-title').innerText = peers[peerId].profile.name;
-            document.getElementById('peer-action-dialog').show();
-        };
-
-        window.openChatFromDialog = function() {
-            document.getElementById('peer-action-dialog').close();
-            currentChatPeerId = actionTargetPeerId;
-            window.switchTab('chat');
-            updateChatPeerList();
-        };
-
-        function updateChatPeerList() {
-            const container = document.getElementById('chat-peer-chips');
-            container.innerHTML = '';
-            
-            if(Object.keys(peers).length === 0) {
-                container.innerHTML = '<div style="color:var(--md-sys-color-on-surface-variant); font-size:14px; padding:8px;">No devices found yet...</div>';
-                return;
-            }
-
-            Object.keys(peers).forEach(peerId => {
-                const p = peers[peerId];
-                const chip = document.createElement('md-filter-chip');
-                chip.label = p.profile.name;
-                if(currentChatPeerId === peerId) chip.selected = true;
-                chip.onclick = () => {
-                    currentChatPeerId = peerId;
-                    updateChatPeerList();
-                    renderChatMessages();
+                const node = document.createElement('div');
+                node.className = 'peer-device';
+                node.style.transform = `translate(${x}px, ${y}px)`;
+                node.onclick = () => {
+                    connectToPeerWebRTC(uid); // タップ時に即座に接続開始
+                    openChatUI(uid);
                 };
-                container.appendChild(chip);
+
+                node.innerHTML = `
+                    <div class="country-ball ${pInfo.ball}">
+                        <div class="eyes-container">
+                            <div class="pb-eye"></div><div class="pb-eye"></div>
+                        </div>
+                        <div class="peer-badge ${pInfo.unread > 0 ? 'has-unread' : ''}">${pInfo.unread}</div>
+                    </div>
+                    <div class="device-name">${pInfo.name}</div>
+                `;
+                radarArea.appendChild(node);
             });
-            renderChatMessages();
         }
 
-        window.renderChatMessages = function() {
-            const container = document.getElementById('chat-messages');
-            container.innerHTML = '';
+        function openChatUI(uid) {
+            const pInfo = State.peers[uid];
+            if(!pInfo) return;
 
-            if (!currentChatPeerId || !peers[currentChatPeerId]) {
-                container.innerHTML = '<div style="text-align:center; color:var(--md-sys-color-on-surface-variant); margin-top:40px;">Select a peer to chat</div>';
-                return;
-            }
+            pInfo.unread = 0;
+            renderRadar();
+            
+            State.activeChatPeerId = uid;
 
-            const msgs = peers[currentChatPeerId].messages;
-            if(msgs.length === 0) {
-                container.innerHTML = '<div style="text-align:center; color:var(--md-sys-color-on-surface-variant); margin-top:40px;">No messages yet. Say hi!</div>';
-                return;
-            }
+            document.getElementById('chat-peer-name').innerText = pInfo.name;
+            document.getElementById('chat-peer-ball').className = `country-ball ${pInfo.ball}`;
+            
+            document.getElementById('chat-placeholder').style.display = 'none';
+            document.getElementById('chat-ui-container').style.display = 'flex';
+            
+            window.switchTab('chat');
+            renderMessages();
+        }
 
+        window.closeChat = function() {
+            document.getElementById('chat-ui-container').style.display = 'none';
+            document.getElementById('chat-placeholder').style.display = 'block';
+            State.activeChatPeerId = null;
+            window.switchTab('radar');
+        };
+
+        function renderMessages() {
+            if(!State.activeChatPeerId) return;
+            const area = document.getElementById('chat-messages-area');
+            area.innerHTML = '';
+            
+            const msgs = State.messages[State.activeChatPeerId] || [];
+            
             msgs.forEach(m => {
-                const isMe = m.from === myProfile.id;
-                const bubble = document.createElement('div');
-                bubble.className = `chat-bubble ${isMe ? 'me' : 'peer'}`;
-
-                if (m.text) {
-                    bubble.textContent = m.text;
-                } else if (m.fileUrl) {
-                    if (m.fileType.startsWith('image/')) {
-                        bubble.innerHTML = `<img src="${m.fileUrl}" class="chat-media"><br><small style="opacity:0.8">${m.fileName}</small>`;
-                    } else if (m.fileType.startsWith('video/')) {
-                        bubble.innerHTML = `<video src="${m.fileUrl}" controls class="chat-media"></video><br><small style="opacity:0.8">${m.fileName}</small>`;
+                const wrap = document.createElement('div');
+                wrap.className = `message-bubble ${m.sender === 'me' ? 'msg-self' : 'msg-other'}`;
+                
+                if (m.type === 'text') {
+                    const txt = document.createElement('div');
+                    txt.innerText = m.content;
+                    wrap.appendChild(txt);
+                } else if (m.type === 'file') {
+                    const blob = new Blob([m.content], { type: m.mimeType });
+                    const url = URL.createObjectURL(blob);
+                    
+                    if (m.mimeType.startsWith('image/')) {
+                        const img = document.createElement('img');
+                        img.src = url;
+                        img.className = 'msg-image';
+                        wrap.appendChild(img);
+                    } else if (m.mimeType.startsWith('video/')) {
+                        const vid = document.createElement('video');
+                        vid.src = url;
+                        vid.controls = true;
+                        vid.className = 'msg-video';
+                        wrap.appendChild(vid);
                     } else {
-                        bubble.innerHTML = `<a href="${m.fileUrl}" download="${m.fileName}" style="color:inherit; text-decoration:underline; font-weight:bold;">📄 ${m.fileName}</a>`;
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = m.fileName;
+                        a.className = 'msg-file-card';
+                        a.innerHTML = `
+                            <span class="material-symbols-outlined">insert_drive_file</span>
+                            <div style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${m.fileName}</div>
+                            <span class="material-symbols-outlined" style="font-size:18px;">download</span>
+                        `;
+                        wrap.appendChild(a);
                     }
                 }
-                container.appendChild(bubble);
+                
+                const time = document.createElement('div');
+                time.className = 'msg-time';
+                time.innerText = m.time;
+                wrap.appendChild(time);
+                
+                area.appendChild(wrap);
             });
-            container.scrollTop = container.scrollHeight;
+            
+            area.scrollTop = area.scrollHeight;
         }
 
-        // --- Settings Logic ---
-        function initSettingsUI() {
-            document.getElementById('profile-name-input').value = myProfile.name;
-            const preview = document.getElementById('settings-ball-preview');
-            preview.className = `country-ball ${myProfile.flag}`;
-
-            const flagContainer = document.getElementById('flag-chips');
-            FLAGS.forEach(f => {
-                const chip = document.createElement('md-filter-chip');
-                chip.label = f.name;
-                chip.selected = f.id === myProfile.flag;
-                chip.onclick = () => {
-                    myProfile.flag = f.id;
-                    preview.className = `country-ball ${myProfile.flag}`;
-                    Array.from(flagContainer.children).forEach(c => c.selected = false);
-                    chip.selected = true;
-                };
-                flagContainer.appendChild(chip);
-            });
-        }
-
-        window.saveProfile = function() {
-            myProfile.name = document.getElementById('profile-name-input').value.trim() || 'Unknown';
-            localStorage.setItem('polandrop_profile', JSON.stringify(myProfile));
-            updateMyUI();
-            announce(); // Update peers
-            alert("Profile saved!");
-        };
-
-        // Start
-        init();
+        setInterval(() => {
+            updatePresence();
+        }, 60000);
 
     </script>
 </body>
