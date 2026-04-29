@@ -1,0 +1,1157 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>PolanDrop | Material 3 Depth</title>
+	<link rel="manifest" href="manifest.json">
+<script>
+if ('serviceWorker' in navigator) {
+	window.addEventListener('load', () => {
+	navigator.serviceWorker.register('sw.js').then(registration => {
+	console.log('ServiceWorker registration successful with scope: ', registration.scope);
+	}, err => {
+	console.log('ServiceWorker registration failed: ', err);
+	}).catch(err => {
+	console.log(err)
+	});
+	});
+}
+</script>
+    
+    
+    
+
+    <!-- Google Fonts & Material Symbols -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Google+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+
+    <!-- PeerJS & QR Libraries -->
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+
+    <!-- Import Map for Material Web & Color Utilities -->
+    <script type="importmap">
+    {
+        "imports": {
+            "@material/web/": "https://esm.run/@material/web/",
+            "@material/material-color-utilities": "https://esm.run/@material/material-color-utilities"
+        }
+    }
+    </script>
+
+    <style>
+        /* * =========================================
+         * 1. CSS Variables & Material Design Tokens (DO NOT MODIFY)
+         * =========================================
+         */
+        :root {
+            /* Base Colors (Will be overridden by JS / Monet) */
+            --md-sys-color-primary: #6750a4;
+            --md-sys-color-on-primary: #ffffff;
+            --md-sys-color-primary-container: #eaddff;
+            --md-sys-color-on-primary-container: #21005d;
+            --md-sys-color-secondary: #625b71;
+            --md-sys-color-on-secondary: #ffffff;
+            --md-sys-color-secondary-container: #e8def8;
+            --md-sys-color-on-secondary-container: #1d192b;
+            --md-sys-color-tertiary: #7d5260;
+            --md-sys-color-on-tertiary: #ffffff;
+            --md-sys-color-tertiary-container: #ffd8e4;
+            --md-sys-color-on-tertiary-container: #31111d;
+            --md-sys-color-error: #b3261e;
+            --md-sys-color-on-error: #ffffff;
+            --md-sys-color-error-container: #f9dedc;
+            --md-sys-color-on-error-container: #410e0b;
+            --md-sys-color-background: #fffbfe;
+            --md-sys-color-on-background: #1c1b1f;
+            --md-sys-color-surface: #fffbfe;
+            --md-sys-color-on-surface: #1c1b1f;
+            --md-sys-color-surface-variant: #e7e0ec;
+            --md-sys-color-on-surface-variant: #49454f;
+            --md-sys-color-outline: #79747e;
+            --md-sys-color-outline-variant: #c4c7c5;
+            --md-sys-color-inverse-surface: #313033;
+            --md-sys-color-inverse-on-surface: #f4f0f4;
+            --md-sys-color-inverse-primary: #d0bcff;
+            
+            /* Typography */
+            --md-ref-typeface-brand: 'Google Sans', sans-serif;
+            --md-ref-typeface-plain: 'Roboto', sans-serif;
+
+            /* Liquid Glass Extensions */
+            --glass-blur: 24px;
+            --glass-opacity-light: 0.7;
+            --glass-opacity-dark: 0.6;
+            --glass-border-opacity: 0.1;
+            
+            /* Animation Curves */
+            --m3-easing-standard: cubic-bezier(0.2, 0, 0, 1);
+            --m3-easing-emphasized: cubic-bezier(0.3, 0, 0, 1);
+            --transition-duration: 0.4s;
+        }
+
+        /* * =========================================
+         * 2. Background & Fluid Mesh (Material Depth)
+         * =========================================
+         */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: var(--md-ref-typeface-plain);
+            background-color: var(--md-sys-color-background);
+            color: var(--md-sys-color-on-background);
+            transition: background-color var(--transition-duration), color var(--transition-duration);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .fluid-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            overflow: hidden;
+            filter: blur(80px);
+            opacity: 0.5;
+            transition: opacity 0.5s;
+            pointer-events: none;
+        }
+
+        .fluid-blob {
+            position: absolute;
+            border-radius: 50%;
+            background: var(--md-sys-color-primary-container);
+            mix-blend-mode: multiply;
+            animation: moveBlob 25s infinite alternate;
+            opacity: 0.6;
+        }
+
+        .fluid-blob:nth-child(2) {
+            background: var(--md-sys-color-secondary-container);
+            width: 500px;
+            height: 500px;
+            left: 10%;
+            top: 20%;
+            animation-duration: 30s;
+            animation-delay: -5s;
+        }
+
+        .fluid-blob:nth-child(3) {
+            background: var(--md-sys-color-tertiary-container);
+            width: 400px;
+            height: 400px;
+            right: 15%;
+            bottom: 10%;
+            animation-duration: 20s;
+            animation-delay: -2s;
+        }
+
+        @keyframes moveBlob {
+            0% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(10vw, 20vh) scale(1.2); }
+            66% { transform: translate(-10vw, 10vh) scale(0.8); }
+            100% { transform: translate(0, 0) scale(1); }
+        }
+
+        /* * =========================================
+         * 3. Header & Navigation (Liquid Glass)
+         * =========================================
+         */
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            height: 64px;
+            padding: 0 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: rgba(255, 255, 255, 0.01);
+            backdrop-filter: blur(var(--glass-blur));
+            -webkit-backdrop-filter: blur(var(--glass-blur));
+            border-bottom: 1px solid rgba(128, 128, 128, var(--glass-border-opacity));
+            transition: background-color 0.3s;
+        }
+
+        header h1 {
+            margin: 0;
+            font-family: var(--md-ref-typeface-brand);
+            font-size: 20px;
+            font-weight: 500;
+            letter-spacing: -0.2px;
+        }
+
+        /* * =========================================
+         * 4. Floating Tab Bar (Expressive Component)
+         * =========================================
+         */
+        .floating-nav-container {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+            width: auto;
+            max-width: 95vw;
+        }
+
+        .custom-nav {
+            display: flex;
+            align-items: center;
+            background-color: rgba(var(--md-sys-color-surface-rgb, 255, 255, 255), var(--glass-opacity-light));
+            backdrop-filter: blur(var(--glass-blur));
+            -webkit-backdrop-filter: blur(var(--glass-blur));
+            padding: 8px;
+            border-radius: 32px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.4s var(--m3-easing-emphasized);
+        }
+
+        body.dark-mode .custom-nav {
+            background-color: rgba(30, 30, 30, var(--glass-opacity-dark));
+            border-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .nav-item {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-width: 72px;
+            height: 48px;
+            cursor: pointer;
+            border-radius: 24px;
+            transition: all 0.2s var(--m3-easing-standard);
+        }
+
+        .nav-icon-container {
+            width: 48px;
+            height: 28px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 16px;
+            transition: background-color 0.3s var(--m3-easing-standard);
+        }
+
+        .nav-item .material-symbols-outlined {
+            font-size: 24px;
+            font-variation-settings: 'FILL' 0, 'wght' 400;
+            color: var(--md-sys-color-on-surface-variant);
+        }
+
+        .nav-label {
+            font-size: 11px;
+            font-weight: 500;
+            margin-top: 2px;
+            color: var(--md-sys-color-on-surface-variant);
+            display: none;
+        }
+
+        .nav-item.active .nav-icon-container {
+            background-color: var(--md-sys-color-secondary-container);
+        }
+        .nav-item.active .material-symbols-outlined {
+            font-variation-settings: 'FILL' 1;
+            color: var(--md-sys-color-on-secondary-container);
+        }
+        .nav-item:hover .nav-icon-container {
+            background-color: rgba(var(--md-sys-color-on-surface-rgb), 0.08);
+        }
+
+        @media (min-width: 900px) {
+            .floating-nav-container {
+                left: 24px;
+                bottom: auto;
+                top: 50%;
+                transform: translateY(-50%);
+            }
+            .custom-nav {
+                flex-direction: column;
+                border-radius: 24px;
+                padding: 12px 8px;
+            }
+            .nav-item { margin: 4px 0; }
+            body { margin-left: 100px; }
+        }
+
+        /* * =========================================
+         * 5. Layout & Sections
+         * =========================================
+         */
+        main {
+            flex: 1;
+            padding: 24px 16px 120px 16px;
+            max-width: 900px;
+            margin: 0 auto;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .view-section {
+            display: none;
+            animation: m3-fade-in 0.5s var(--m3-easing-emphasized) forwards;
+        }
+        .view-section.active { display: block; }
+
+        @keyframes m3-fade-in {
+            from { opacity: 0; transform: scale(0.95) translateY(20px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .glass-card {
+            background-color: rgba(var(--md-sys-color-surface-rgb), var(--glass-opacity-light));
+            backdrop-filter: blur(var(--glass-blur));
+            -webkit-backdrop-filter: blur(var(--glass-blur));
+            border-radius: 28px;
+            padding: 24px;
+            margin-bottom: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            transition: transform 0.3s var(--m3-easing-standard), box-shadow 0.3s;
+        }
+
+        body.dark-mode .glass-card {
+            background-color: rgba(30, 30, 30, var(--glass-opacity-dark));
+            border-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .glass-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.1);
+        }
+
+        .section-title {
+            font-family: var(--md-ref-typeface-brand);
+            font-size: 22px;
+            font-weight: 500;
+            margin-bottom: 16px;
+            color: var(--md-sys-color-primary);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        /* Liquid Progress Overlay */
+        #loading-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--md-sys-color-surface);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.6s var(--m3-easing-emphasized);
+        }
+
+        .loader-logo {
+            font-family: var(--md-ref-typeface-brand);
+            font-size: 32px;
+            margin-bottom: 24px;
+            color: var(--md-sys-color-primary);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.05); opacity: 1; }
+            100% { transform: scale(1); opacity: 0.8; }
+        }
+
+        /* * =========================================
+         * 6. PolanDrop Custom UI (Countryball & Radar)
+         * =========================================
+         */
+        
+        /* ボールのCSS */
+        .country-ball {
+            width: 100px;
+            height: 90px;
+            border: 4px solid #000;
+            border-radius: 52% 48% 45% 55% / 55% 55% 45% 45%;
+            position: relative;
+            overflow: hidden;
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: inset -8px -8px 0 rgba(0,0,0,0.1);
+            transition: transform 0.2s ease;
+            flex-shrink: 0;
+        }
+        .country-ball:hover {
+            transform: scale(1.05) translateY(-5px);
+        }
+        .eyes-container {
+            display: flex;
+            gap: 12px;
+            margin-top: -10px;
+            pointer-events: none;
+        }
+        .pb-eye {
+            width: 22px;
+            height: 28px;
+            background: #fff;
+            border: 3px solid #000;
+            border-radius: 50%;
+        }
+        .pb-eye.happy {
+            height: 15px;
+            border-radius: 20px 20px 0 0;
+            margin-top: 10px;
+        }
+        .pb-eye.angry {
+            transform: rotate(15deg);
+            border-radius: 0 0 50% 50%;
+        }
+        
+        /* 国旗プリセット */
+        .pb-poland { background: linear-gradient(to bottom, #dc143c 50%, #ffffff 50%); }
+        .pb-japan { background-image: url('https://upload.wikimedia.org/wikipedia/commons/9/9e/Flag_of_Japan.svg'); }
+        .pb-us { background-image: url('https://upload.wikimedia.org/wikipedia/en/a/a4/Flag_of_the_United_States.svg'); }
+        .pb-uk { background-image: url('https://upload.wikimedia.org/wikipedia/en/a/ae/Flag_of_the_United_Kingdom.svg'); }
+        .pb-france { background-image: url('https://upload.wikimedia.org/wikipedia/en/c/c3/Flag_of_France.svg'); }
+        .pb-germany { background-image: url('https://upload.wikimedia.org/wikipedia/en/b/ba/Flag_of_Germany.svg'); }
+        .pb-italy { background-image: url('https://upload.wikimedia.org/wikipedia/en/0/03/Flag_of_Italy.svg'); }
+        .pb-canada { background-image: url('https://upload.wikimedia.org/wikipedia/commons/c/cf/Flag_of_Canada.svg'); }
+        .pb-earth { background-image: url('https://upload.wikimedia.org/wikipedia/commons/2/22/Earth_Western_Hemisphere_transparent_background.png'); background-size: contain; background-repeat: no-repeat; background-color: #0f172a;}
+
+        /* 小さいサイズ (レーダー & チャット用) */
+        .country-ball.small {
+            width: 50px;
+            height: 45px;
+            border-width: 2px;
+        }
+        .country-ball.small .pb-eye {
+            width: 11px;
+            height: 14px;
+            border-width: 2px;
+        }
+        .country-ball.small .eyes-container {
+            gap: 6px;
+            margin-top: -5px;
+        }
+
+        /* レーダーコンテナ */
+        .radar-container {
+            position: relative;
+            width: 100%;
+            height: 350px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 24px 0;
+            overflow: hidden;
+        }
+        .radar-ring {
+            position: absolute;
+            width: 250px;
+            height: 250px;
+            border-radius: 50%;
+            border: 2px solid rgba(var(--md-sys-color-primary-rgb), 0.2);
+            animation: radarPulse 3s infinite linear;
+            pointer-events: none;
+        }
+        @keyframes radarPulse {
+            0% { transform: scale(0.5); opacity: 1; }
+            100% { transform: scale(1.5); opacity: 0; }
+        }
+        .radar-me {
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .radar-peer {
+            position: absolute;
+            transition: all 0.5s var(--m3-easing-emphasized);
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 5;
+        }
+        .radar-name {
+            font-size: 13px;
+            font-weight: 500;
+            margin-top: 8px;
+            color: var(--md-sys-color-on-surface);
+            background: rgba(var(--md-sys-color-surface-rgb), var(--glass-opacity-light));
+            padding: 2px 8px;
+            border-radius: 12px;
+            backdrop-filter: blur(4px);
+        }
+
+        /* チャット UI */
+        .chat-window {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            padding: 16px;
+            scroll-behavior: smooth;
+        }
+        .msg-bubble {
+            padding: 10px 16px;
+            border-radius: 20px;
+            max-width: 80%;
+            word-wrap: break-word;
+            font-size: 15px;
+            line-height: 1.4;
+        }
+        .msg-me {
+            align-self: flex-end;
+            background: var(--md-sys-color-primary-container);
+            color: var(--md-sys-color-on-primary-container);
+            border-bottom-right-radius: 4px;
+        }
+        .msg-peer {
+            align-self: flex-start;
+            background: rgba(var(--md-sys-color-surface-variant-rgb), 0.5);
+            color: var(--md-sys-color-on-surface-variant);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom-left-radius: 4px;
+        }
+
+        /* Glass Dialog Customization */
+        dialog {
+            border: none;
+            background: transparent;
+            margin: auto;
+            padding: 0;
+            overflow: visible;
+        }
+        dialog::backdrop {
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+        }
+        .dialog-content {
+            background-color: rgba(var(--md-sys-color-surface-rgb), var(--glass-opacity-light));
+            backdrop-filter: blur(var(--glass-blur));
+            -webkit-backdrop-filter: blur(var(--glass-blur));
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 28px;
+            padding: 24px;
+            color: var(--md-sys-color-on-surface);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+            width: 90vw;
+            max-width: 400px;
+            box-sizing: border-box;
+        }
+        body.dark-mode .dialog-content {
+            background-color: rgba(30, 30, 30, var(--glass-opacity-dark));
+            border-color: rgba(255, 255, 255, 0.05);
+        }
+
+        /* アイコン選択 */
+        .icon-option {
+            cursor: pointer;
+            border-radius: 50%;
+            padding: 4px;
+            border: 2px solid transparent;
+            transition: all 0.2s;
+        }
+        .icon-option.selected {
+            border-color: var(--md-sys-color-primary);
+            background: rgba(var(--md-sys-color-primary-rgb), 0.1);
+        }
+
+    </style>
+</head>
+<body class="light-mode">
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay">
+        <div class="loader-logo">PolanDrop</div>
+        <md-circular-progress indeterminate></md-circular-progress>
+    </div>
+
+    <!-- Liquid Animated Background -->
+    <div class="fluid-background">
+        <div class="fluid-blob"></div>
+        <div class="fluid-blob" style="width:600px; height:600px; right: -100px; top: -100px;"></div>
+        <div class="fluid-blob"></div>
+    </div>
+
+    <!-- Top App Bar -->
+    <header>
+        <div style="display:flex; align-items:center; gap:8px;">
+            <md-icon-button><span class="material-symbols-outlined">wifi_tethering</span></md-icon-button>
+            <h1>PolanDrop</h1>
+        </div>
+        <div style="display:flex; align-items:center;">
+            <input type="color" id="source-color-picker" value="#6750a4" style="width:0; height:0; visibility:hidden; position:absolute;">
+            <md-icon-button onclick="document.getElementById('source-color-picker').click()">
+                <span class="material-symbols-outlined">palette</span>
+            </md-icon-button>
+            <md-icon-button onclick="window.toggleDarkMode()">
+                <span class="material-symbols-outlined" id="theme-icon">dark_mode</span>
+            </md-icon-button>
+        </div>
+    </header>
+
+    <main>
+        <!-- VIEW: RADAR (Home) -->
+        <section id="view-radar" class="view-section active">
+            <div class="glass-card" style="text-align: center; padding-bottom: 40px;">
+                <div class="section-title" style="justify-content: center;">
+                    <span class="material-symbols-outlined">radar</span>
+                    P2P Radar
+                </div>
+                <p style="opacity: 0.8; margin-top:0;">近くのデバイスを見つけて共有を開始します</p>
+                
+                <div id="radar-container" class="radar-container">
+                    <div class="radar-ring"></div>
+                    <!-- 自分が中心 -->
+                    <div class="radar-me">
+                        <div class="country-ball pb-earth" id="my-ball-radar">
+                          <div class="eyes-container">
+                            <div class="pb-eye happy"></div>
+                            <div class="pb-eye happy"></div>
+                          </div>
+                        </div>
+                        <span class="radar-name" id="my-name-radar">Loading...</span>
+                    </div>
+                    <!-- JSでピアを追加 -->
+                </div>
+
+                <div style="display:flex; justify-content: center; gap:12px; flex-wrap: wrap;">
+                    <md-filled-tonal-button onclick="document.getElementById('qr-dialog').showModal()">
+                        <md-icon slot="icon"><span class="material-symbols-outlined">qr_code</span></md-icon>
+                        ペアリング (QR)
+                    </md-filled-tonal-button>
+                    <md-outlined-button onclick="startScan()">
+                        <md-icon slot="icon"><span class="material-symbols-outlined">qr_code_scanner</span></md-icon>
+                        スキャン
+                    </md-outlined-button>
+                    <md-outlined-button onclick="document.getElementById('manual-dialog').showModal()">
+                        <md-icon slot="icon"><span class="material-symbols-outlined">keyboard</span></md-icon>
+                        ID入力
+                    </md-outlined-button>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW: CHAT -->
+        <section id="view-chat" class="view-section">
+            <div class="glass-card" style="display:flex; flex-direction:column; height: 65vh; padding: 0; overflow:hidden;">
+                <!-- Header -->
+                <div style="padding: 16px; border-bottom: 1px solid rgba(128,128,128,0.2); display:flex; align-items:center; gap:12px; background: rgba(0,0,0,0.02);">
+                    <div id="chat-header-icon" class="country-ball small pb-earth">
+                         <div class="eyes-container"><div class="pb-eye"></div><div class="pb-eye"></div></div>
+                    </div>
+                    <div style="flex:1;">
+                        <h3 id="chat-header-name" style="margin:0; font-size:18px;">相手を選択してください</h3>
+                        <small id="chat-header-status" style="opacity:0.7;">未接続</small>
+                    </div>
+                </div>
+
+                <!-- Messages -->
+                <div id="chat-messages" class="chat-window">
+                    <div style="text-align:center; opacity:0.5; margin-top: 40px;">レーダーから接続する相手を選んでください</div>
+                </div>
+
+                <!-- Input Area -->
+                <div style="padding: 12px 16px; border-top: 1px solid rgba(128,128,128,0.2); display:flex; gap:8px; align-items:center;">
+                    <input type="file" id="file-input" style="display:none;" onchange="handleFileSelect(event)">
+                    <md-icon-button onclick="document.getElementById('file-input').click()">
+                        <span class="material-symbols-outlined">attach_file</span>
+                    </md-icon-button>
+                    <md-outlined-text-field id="chat-input" placeholder="メッセージを入力..." style="flex:1; margin:0; --md-outlined-text-field-container-shape: 20px;" onkeypress="if(event.key==='Enter') sendChatMessage()"></md-outlined-text-field>
+                    <md-filled-icon-button onclick="sendChatMessage()">
+                        <span class="material-symbols-outlined">send</span>
+                    </md-filled-icon-button>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW: SETTINGS -->
+        <section id="view-settings" class="view-section">
+            <div class="glass-card">
+                <div class="section-title">
+                    <span class="material-symbols-outlined">person</span>
+                    プロフィール設定
+                </div>
+                <md-outlined-text-field id="profile-name-input" label="表示名" style="width:100%; margin-bottom:16px;" onchange="saveProfile()"></md-outlined-text-field>
+                
+                <p style="margin-bottom:8px; font-weight:500;">アイコン (Countryball)</p>
+                <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:16px;" id="icon-selector">
+                    <!-- JSで動的に生成 -->
+                </div>
+
+                <div style="margin-top:24px; display:flex; justify-content:flex-end;">
+                    <md-filled-button onclick="saveProfile()">保存して適用</md-filled-button>
+                </div>
+            </div>
+
+            <div class="glass-card" style="padding:0; overflow:hidden;">
+                <div style="padding:24px 24px 8px 24px;" class="section-title">関連リンク</div>
+                <md-list style="background:transparent;">
+                    <md-list-item type="link" href="https://sites.google.com/view/pballhub" target="_blank">
+                        <div slot="headline">Polandball Hub</div>
+                        <div slot="supporting-text">ポーランドボール関連コンテンツ</div>
+                        <md-icon slot="start"><span class="material-symbols-outlined">public</span></md-icon>
+                        <md-icon slot="end"><span class="material-symbols-outlined">open_in_new</span></md-icon>
+                    </md-list-item>
+                </md-list>
+            </div>
+        </section>
+    </main>
+
+    <!-- Dialogs -->
+    <dialog id="qr-dialog">
+        <div class="dialog-content">
+            <h3 style="margin-top:0; color:var(--md-sys-color-primary);">あなたのQRコード</h3>
+            <div style="text-align:center; background:#fff; padding:16px; border-radius:16px; margin-bottom:16px;">
+                <canvas id="my-qr-canvas"></canvas>
+            </div>
+            <p style="font-size:14px; word-break: break-all;">ID: <span id="my-peer-id-display">Generating...</span></p>
+            <div style="display:flex; gap:8px; justify-content: flex-end;">
+                <md-text-button onclick="document.getElementById('qr-dialog').close()">閉じる</md-text-button>
+                <md-filled-button onclick="copyMyId(event)">IDをコピー</md-filled-button>
+            </div>
+        </div>
+    </dialog>
+
+    <dialog id="scan-dialog">
+        <div class="dialog-content">
+            <h3 style="margin-top:0; color:var(--md-sys-color-primary);">QRコードをスキャン</h3>
+            <div id="reader" style="width:100%; max-width:400px; margin:0 auto; overflow:hidden; border-radius:16px;"></div>
+            <div style="display:flex; gap:8px; justify-content: flex-end; margin-top:16px;">
+                <md-text-button onclick="stopScan()">キャンセル</md-text-button>
+            </div>
+        </div>
+    </dialog>
+
+    <dialog id="manual-dialog">
+        <div class="dialog-content">
+            <h3 style="margin-top:0; color:var(--md-sys-color-primary);">相手のIDを入力</h3>
+            <md-outlined-text-field id="manual-id-input" label="Peer ID" style="width:100%; margin:16px 0;"></md-outlined-text-field>
+            <div style="display:flex; gap:8px; justify-content: flex-end;">
+                <md-text-button onclick="document.getElementById('manual-dialog').close()">キャンセル</md-text-button>
+                <md-filled-button onclick="connectFromInput()">接続</md-filled-button>
+            </div>
+        </div>
+    </dialog>
+
+    <!-- Floating Navigation Bar -->
+    <div class="floating-nav-container">
+        <nav class="custom-nav">
+            <div class="nav-item active" id="nav-radar" onclick="window.switchTab('radar')">
+                <div class="nav-icon-container">
+                    <span class="material-symbols-outlined">radar</span>
+                </div>
+                <span class="nav-label">レーダー</span>
+            </div>
+            <div class="nav-item" id="nav-chat" onclick="window.switchTab('chat')">
+                <div class="nav-icon-container">
+                    <span class="material-symbols-outlined">chat</span>
+                </div>
+                <span class="nav-label">チャット</span>
+            </div>
+            <div class="nav-item" id="nav-settings" onclick="window.switchTab('settings')">
+                <div class="nav-icon-container">
+                    <span class="material-symbols-outlined">settings</span>
+                </div>
+                <span class="nav-label">設定</span>
+            </div>
+        </nav>
+    </div>
+
+    <!-- Scripts -->
+    <script type="module">
+        import '@material/web/all.js';
+        import { 
+            argbFromHex, 
+            themeFromSourceColor, 
+            hexFromArgb
+        } from "@material/material-color-utilities";
+
+        // ==========================================
+        // --- 1. Global State & MWC Initialization ---
+        // ==========================================
+        
+        let isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        let currentSourceColor = '#6750a4';
+
+        window.updateTheme = function(hexColor) {
+            currentSourceColor = hexColor;
+            
+            const argb = argbFromHex(hexColor);
+            const theme = themeFromSourceColor(argb);
+            const scheme = isDarkMode ? theme.schemes.dark : theme.schemes.light;
+            const root = document.documentElement;
+            
+            const tokens = {
+                'primary': scheme.primary, 'on-primary': scheme.onPrimary, 'primary-container': scheme.primaryContainer, 'on-primary-container': scheme.onPrimaryContainer,
+                'secondary': scheme.secondary, 'on-secondary': scheme.onSecondary, 'secondary-container': scheme.secondaryContainer, 'on-secondary-container': scheme.onSecondaryContainer,
+                'tertiary': scheme.tertiary, 'on-tertiary': scheme.onTertiary, 'tertiary-container': scheme.tertiaryContainer, 'on-tertiary-container': scheme.onTertiaryContainer,
+                'error': scheme.error, 'on-error': scheme.onError, 'error-container': scheme.errorContainer, 'on-error-container': scheme.onErrorContainer,
+                'background': scheme.background, 'on-background': scheme.onBackground, 'surface': scheme.surface, 'on-surface': scheme.onSurface,
+                'surface-variant': scheme.surfaceVariant, 'on-surface-variant': scheme.onSurfaceVariant, 'outline': scheme.outline, 'outline-variant': scheme.outlineVariant,
+            };
+
+            for (const [key, value] of Object.entries(tokens)) {
+                const hex = hexFromArgb(value);
+                root.style.setProperty(`--md-sys-color-${key}`, hex);
+                const r = (value >> 16) & 0xff;
+                const g = (value >> 8) & 0xff;
+                const b = value & 0xff;
+                root.style.setProperty(`--md-sys-color-${key}-rgb`, `${r}, ${g}, ${b}`);
+            }
+
+            const picker = document.getElementById('source-color-picker');
+            if(picker) picker.value = hexColor;
+        };
+
+        window.toggleDarkMode = function() {
+            isDarkMode = !isDarkMode;
+            document.body.classList.toggle('dark-mode', isDarkMode);
+            const icon = document.getElementById('theme-icon');
+            if(icon) icon.textContent = isDarkMode ? 'light_mode' : 'dark_mode';
+            window.updateTheme(currentSourceColor);
+        };
+
+        window.switchTab = function(tabId) {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            const targetView = document.getElementById('view-' + tabId);
+            if(targetView) targetView.classList.add('active');
+
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            const targetNav = document.getElementById('nav-' + tabId);
+            if(targetNav) targetNav.classList.add('active');
+            
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+
+        // Resize behavior for background mesh (Material Depth Base)
+        window.addEventListener('mousemove', (e) => {
+            const x = (e.clientX / window.innerWidth - 0.5) * 40;
+            const y = (e.clientY / window.innerHeight - 0.5) * 40;
+            document.querySelectorAll('.fluid-blob').forEach((b, i) => {
+                b.style.transform = `translate(${x * (i+1)}px, ${y * (i+1)}px)`;
+            });
+        });
+
+        document.getElementById('source-color-picker').addEventListener('input', (e) => window.updateTheme(e.target.value));
+
+        // ==========================================
+        // --- 2. PolanDrop Logic (PeerJS & Core) ---
+        // ==========================================
+
+        const iconOptions = ['pb-japan', 'pb-us', 'pb-uk', 'pb-france', 'pb-germany', 'pb-italy', 'pb-canada', 'pb-poland', 'pb-earth'];
+        let myProfile = JSON.parse(localStorage.getItem('polandrop_profile')) || {
+            name: 'Player-' + Math.floor(Math.random()*1000),
+            icon: iconOptions[Math.floor(Math.random() * iconOptions.length)]
+        };
+
+        let peer;
+        let peersData = {}; // { id: { conn, name, icon } }
+        let chatHistory = {}; // { id: [ {sender, type, ...} ] }
+        let activeChatPeerId = null;
+        let html5QrCode;
+
+        function initPolanDrop() {
+            // Apply profile UI
+            document.getElementById('profile-name-input').value = myProfile.name;
+            updateMyRadarUI();
+            renderIconSelector();
+
+            // Initialize PeerJS
+            peer = new Peer({ debug: 2 });
+
+            peer.on('open', (id) => {
+                console.log('My peer ID:', id);
+                document.getElementById('my-peer-id-display').innerText = id;
+                
+                // Generate QR
+                new QRious({
+                    element: document.getElementById('my-qr-canvas'),
+                    value: window.location.origin + window.location.pathname + '?id=' + id,
+                    size: 200,
+                    level: 'M'
+                });
+
+                // Auto connect from URL param
+                const urlParams = new URLSearchParams(window.location.search);
+                const targetId = urlParams.get('id');
+                if(targetId && targetId !== id) connectToPeer(targetId);
+            });
+
+            peer.on('connection', (conn) => setupConnection(conn));
+        }
+
+        window.connectToPeer = function(targetId) {
+            if(targetId === peer.id || peersData[targetId]) return;
+            const conn = peer.connect(targetId);
+            setupConnection(conn);
+        };
+
+        function setupConnection(conn) {
+            conn.on('open', () => {
+                console.log('Connected to:', conn.peer);
+                conn.send({ type: 'profile', name: myProfile.name, icon: myProfile.icon });
+                peersData[conn.peer] = { conn: conn, name: 'Unknown', icon: 'pb-earth' };
+                if(!chatHistory[conn.peer]) chatHistory[conn.peer] = [];
+                renderRadarPeers();
+            });
+
+            conn.on('data', (data) => {
+                if(data.type === 'profile') {
+                    peersData[conn.peer].name = data.name;
+                    peersData[conn.peer].icon = data.icon;
+                    renderRadarPeers();
+                    if(activeChatPeerId === conn.peer) renderChatHeader();
+                } else if(data.type === 'text') {
+                    addMessageToHistory(conn.peer, { sender: 'peer', type: 'text', text: data.text });
+                } else if(data.type === 'file') {
+                    const blob = new Blob([data.data], { type: data.mime });
+                    const url = URL.createObjectURL(blob);
+                    addMessageToHistory(conn.peer, { sender: 'peer', type: 'file', filename: data.filename, mime: data.mime, url: url });
+                }
+            });
+
+            conn.on('close', () => {
+                delete peersData[conn.peer];
+                renderRadarPeers();
+                if(activeChatPeerId === conn.peer) {
+                    activeChatPeerId = null;
+                    renderChatHeader();
+                    renderChatMessages();
+                }
+            });
+        }
+
+        // ==========================================
+        // --- 3. UI Rendering & Interactions ---
+        // ==========================================
+
+        function renderIconSelector() {
+            const container = document.getElementById('icon-selector');
+            container.innerHTML = '';
+            iconOptions.forEach(icon => {
+                const div = document.createElement('div');
+                div.className = `icon-option ${myProfile.icon === icon ? 'selected' : ''}`;
+                div.onclick = () => { myProfile.icon = icon; renderIconSelector(); };
+                div.innerHTML = `<div class="country-ball small ${icon}"><div class="eyes-container"><div class="pb-eye"></div><div class="pb-eye"></div></div></div>`;
+                container.appendChild(div);
+            });
+        }
+
+        window.saveProfile = function() {
+            myProfile.name = document.getElementById('profile-name-input').value || 'Player';
+            localStorage.setItem('polandrop_profile', JSON.stringify(myProfile));
+            updateMyRadarUI();
+            
+            // Broadcast profile update
+            Object.values(peersData).forEach(p => {
+                if(p.conn && p.conn.open) p.conn.send({ type: 'profile', name: myProfile.name, icon: myProfile.icon });
+            });
+        };
+
+        function updateMyRadarUI() {
+            document.getElementById('my-name-radar').innerText = myProfile.name + ' (You)';
+            document.getElementById('my-ball-radar').className = `country-ball ${myProfile.icon}`;
+        }
+
+        function renderRadarPeers() {
+            // Remove old peers
+            document.querySelectorAll('.radar-peer').forEach(el => el.remove());
+
+            const container = document.getElementById('radar-container');
+            const peerIds = Object.keys(peersData);
+            const radius = 120; // Distance from center
+            const angleStep = (2 * Math.PI) / (peerIds.length || 1);
+
+            peerIds.forEach((id, index) => {
+                const pData = peersData[id];
+                const angle = index * angleStep;
+                const x = Math.cos(angle) * radius;
+                const y = Math.sin(angle) * radius;
+
+                const div = document.createElement('div');
+                div.className = 'radar-peer';
+                div.style.transform = `translate(${x}px, ${y}px)`;
+                div.onclick = () => openChatWith(id);
+                div.innerHTML = `
+                    <div class="country-ball small ${pData.icon}">
+                        <div class="eyes-container"><div class="pb-eye happy"></div><div class="pb-eye happy"></div></div>
+                    </div>
+                    <span class="radar-name">${pData.name}</span>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function openChatWith(peerId) {
+            activeChatPeerId = peerId;
+            window.switchTab('chat');
+            renderChatHeader();
+            renderChatMessages();
+        }
+
+        function renderChatHeader() {
+            const hName = document.getElementById('chat-header-name');
+            const hStatus = document.getElementById('chat-header-status');
+            const hIcon = document.getElementById('chat-header-icon');
+
+            if(!activeChatPeerId || !peersData[activeChatPeerId]) {
+                hName.innerText = '相手を選択してください';
+                hStatus.innerText = '未接続';
+                hIcon.className = 'country-ball small pb-earth';
+                return;
+            }
+            const pData = peersData[activeChatPeerId];
+            hName.innerText = pData.name;
+            hStatus.innerText = '接続済み';
+            hIcon.className = `country-ball small ${pData.icon}`;
+        }
+
+        function addMessageToHistory(peerId, msg) {
+            if(!chatHistory[peerId]) chatHistory[peerId] = [];
+            chatHistory[peerId].push(msg);
+            if(activeChatPeerId === peerId) renderChatMessages();
+        }
+
+        function renderChatMessages() {
+            const container = document.getElementById('chat-messages');
+            container.innerHTML = '';
+
+            if(!activeChatPeerId || !chatHistory[activeChatPeerId]) {
+                container.innerHTML = '<div style="text-align:center; opacity:0.5; margin-top: 40px;">レーダーから接続する相手を選んでください</div>';
+                return;
+            }
+
+            const msgs = chatHistory[activeChatPeerId];
+            msgs.forEach(msg => {
+                const div = document.createElement('div');
+                div.className = `msg-bubble ${msg.sender === 'me' ? 'msg-me' : 'msg-peer'}`;
+                
+                if(msg.type === 'text') {
+                    div.innerText = msg.text;
+                } else if(msg.type === 'file') {
+                    if(msg.mime.startsWith('image/')) {
+                        div.innerHTML = `<img src="${msg.url}" style="max-width:100%; border-radius:8px;" alt="${msg.filename}"><br><small>${msg.filename}</small>`;
+                    } else if(msg.mime.startsWith('video/')) {
+                        div.innerHTML = `<video src="${msg.url}" controls style="max-width:100%; border-radius:8px;"></video><br><small>${msg.filename}</small>`;
+                    } else {
+                        div.innerHTML = `<span class="material-symbols-outlined" style="vertical-align:middle;">insert_drive_file</span> <a href="${msg.url}" download="${msg.filename}" style="color:inherit; text-decoration:underline;">${msg.filename}</a>`;
+                    }
+                }
+                container.appendChild(div);
+            });
+            container.scrollTop = container.scrollHeight;
+        }
+
+        window.sendChatMessage = function() {
+            if(!activeChatPeerId || !peersData[activeChatPeerId]) return;
+            const input = document.getElementById('chat-input');
+            const text = input.value.trim();
+            if(!text) return;
+
+            peersData[activeChatPeerId].conn.send({ type: 'text', text: text });
+            addMessageToHistory(activeChatPeerId, { sender: 'me', type: 'text', text: text });
+            input.value = '';
+        };
+
+        window.handleFileSelect = function(e) {
+            if(!activeChatPeerId || !peersData[activeChatPeerId]) return;
+            const file = e.target.files[0];
+            if(!file) return;
+
+            peersData[activeChatPeerId].conn.send({ type: 'file', filename: file.name, mime: file.type, data: file });
+            const url = URL.createObjectURL(file);
+            addMessageToHistory(activeChatPeerId, { sender: 'me', type: 'file', filename: file.name, mime: file.type, url: url });
+            e.target.value = '';
+        };
+
+        // ==========================================
+        // --- 4. Modals & Copy/Scan Tools ---
+        // ==========================================
+
+        window.startScan = function() {
+            document.getElementById('scan-dialog').showModal();
+            if(!html5QrCode) html5QrCode = new Html5Qrcode("reader");
+            html5QrCode.start(
+                { facingMode: "environment" },
+                { fps: 10, qrbox: { width: 250, height: 250 } },
+                (decodedText) => {
+                    let id = decodedText;
+                    if(id.includes('?id=')) id = id.split('?id=')[1];
+                    connectToPeer(id);
+                    stopScan();
+                },
+                (err) => { /* ignore frequent scanning errors */ }
+            ).catch(err => console.log("Scan Error:", err));
+        };
+
+        window.stopScan = function() {
+            if(html5QrCode && html5QrCode.isScanning) {
+                html5QrCode.stop().then(() => document.getElementById('scan-dialog').close());
+            } else {
+                document.getElementById('scan-dialog').close();
+            }
+        };
+
+        window.connectFromInput = function() {
+            const id = document.getElementById('manual-id-input').value.trim();
+            if(id) {
+                connectToPeer(id);
+                document.getElementById('manual-id-input').value = '';
+                document.getElementById('manual-dialog').close();
+            }
+        };
+
+        window.copyMyId = function(event) {
+            const id = document.getElementById('my-peer-id-display').innerText;
+            const fallbackCopy = (text) => {
+                const ta = document.createElement("textarea");
+                ta.value = text;
+                ta.style.position = "fixed";
+                document.body.appendChild(ta);
+                ta.focus(); ta.select();
+                try { document.execCommand('copy'); } catch(e){}
+                document.body.removeChild(ta);
+            };
+
+            if (!navigator.clipboard) fallbackCopy(id);
+            else navigator.clipboard.writeText(id).catch(() => fallbackCopy(id));
+
+            const btn = event.currentTarget;
+            const oldText = btn.innerText;
+            btn.innerText = "コピーしました！";
+            setTimeout(() => btn.innerText = oldText, 2000);
+        };
+
+        // ==========================================
+        // --- 5. Boot Application ---
+        // ==========================================
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                const overlay = document.getElementById('loading-overlay');
+                overlay.style.opacity = '0';
+                setTimeout(() => overlay.style.display = 'none', 600);
+            }, 1200);
+
+            window.updateTheme(currentSourceColor);
+            if(isDarkMode) document.body.classList.add('dark-mode');
+            
+            initPolanDrop();
+        });
+
+    </script>
+</body>
+</html>
